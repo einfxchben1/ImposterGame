@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Imposter Game</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎭 Wer ist der Imposter?</h1>
@@ -22,9 +22,8 @@
 
     function createLobby() {
       const name = getName();
-      if (!name) return alert('Bitte Name eingeben.');
+      if (!name) return alert('Bitte gib deinen Namen ein.');
       socket.emit('createLobby', name);
-
       socket.once('lobbyCreated', ({ lobbyCode }) => {
         window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
       });
@@ -33,7 +32,7 @@
     function joinLobby() {
       const name = getName();
       const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
-      if (!name || !code) return alert('Bitte Name und Lobby-Code eingeben.');
+      if (!name || !code) return alert('Name und Code eingeben!');
       window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
     }
   </script>
