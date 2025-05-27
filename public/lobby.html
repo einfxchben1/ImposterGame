@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Lobby</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🧑‍🤝‍🧑 Lobby-Code: <span id="lobbyCode"></span></h1>
@@ -18,12 +18,11 @@
     const playerName = params.get('name');
 
     if (!lobbyCode || !playerName) {
-      alert('Fehlende Daten.');
+      alert('Fehlende Daten!');
       window.location.href = '/';
     }
 
     document.getElementById('lobbyCode').textContent = lobbyCode;
-
     socket.emit('joinLobby', { lobbyCode, playerName });
 
     socket.on('playerList', (players) => {
