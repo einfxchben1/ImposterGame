@@ -17,6 +17,8 @@
     const code = params.get('code');
     document.getElementById('lobbyCode').textContent = code;
 
+    socket.emit('joinLobby', { lobbyCode: code, playerName: '...' });
+
     socket.on('playerList', (players) => {
       document.getElementById('players').innerHTML =
         players.map(p => `<li>${p.name}</li>`).join('');
