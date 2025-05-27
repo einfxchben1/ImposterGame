@@ -12,7 +12,7 @@ app.use(express.static('public'));
 const lobbies = new Map();
 
 function getRandomWord() {
-  const words = ['Pizza', 'Kino', 'Flughafen', 'Wald', 'Schule', 'Strand', 'Zoo'];
+  const words = ['Pizza', 'Zug', 'Strand', 'Museum', 'Kino', 'Wald', 'Supermarkt'];
   return words[Math.floor(Math.random() * words.length)];
 }
 
@@ -49,8 +49,8 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const alreadyJoined = lobby.players.find(p => p.id === socket.id);
-    if (!alreadyJoined) {
+    const alreadyIn = lobby.players.find(p => p.id === socket.id);
+    if (!alreadyIn) {
       lobby.players.push({ id: socket.id, name: playerName });
       socket.join(code);
     }
@@ -64,6 +64,7 @@ io.on('connection', (socket) => {
     if (!lobby || lobby.started || lobby.players.length < 3) return;
 
     lobby.started = true;
+
     const impostersCount = lobby.players.length >= 9 ? 2 : 1;
     const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
     lobby.imposters = shuffled.slice(0, impostersCount).map(p => p.id);
@@ -83,7 +84,9 @@ io.on('connection', (socket) => {
       if (index !== -1) {
         lobby.players.splice(index, 1);
         io.to(code).emit('playerList', lobby.players);
-        if (lobby.players.length === 0) lobbies.delete(code);
+        if (lobby.players.length === 0) {
+          lobbies.delete(code);
+        }
         break;
       }
     }
@@ -91,5 +94,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
-});
+  console.log(`✅ Server läuft auf http://localhost:${PORT}`);
+}
