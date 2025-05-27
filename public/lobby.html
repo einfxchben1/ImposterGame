@@ -6,30 +6,61 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Lobby <span id="lobbyCode"></span></h1>
+  <h1>🧑‍🤝‍🧑 Lobby-Code: <span id="lobbyCode"></span></h1>
+
+  <h2>Spieler in der Lobby:</h2>
   <ul id="players"></ul>
-  <button onclick="startGame()">Spiel starten</button>
+
+  <button id="startBtn" onclick="startGame()">🚀 Spiel starten</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+
+    // 🧠 Hole Parameter aus der URL
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    document.getElementById('lobbyCode').textContent = code;
+    const lobbyCode = params.get('code');
+    const playerName = params.get('name');
 
-    socket.emit('joinLobby', { lobbyCode: code, playerName: '...' });
-
-    socket.on('playerList', (players) => {
-      document.getElementById('players').innerHTML =
-        players.map(p => `<li>${p.name}</li>`).join('');
-    });
-
-    function startGame() {
-      socket.emit('startGame', code);
+    if (!lobbyCode || !playerName) {
+      alert('Lobby-Code oder Name fehlt!');
+      window.location.href = '/';
     }
 
+    document.getElementById('lobbyCode').textContent = lobbyCode;
+
+    // ⏱ Join Lobby (wenn Spieler reloaded)
+    socket.emit('joinLobby', {
+      lobbyCode: lobbyCode,
+      playerName: playerName
+    });
+
+    // 👥 Spieler aktualisieren
+    socket.on('playerList', (players) => {
+      const list = document.getElementById('players');
+      list.innerHTML = '';
+      players.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = p.name;
+        list.appendChild(li);
+      });
+    });
+
+    // ✅ Spiel starten
+    function startGame() {
+      socket.emit('startGame', lobbyCode);
+    }
+
+    // 🟢 Weiterleitung zum Spiel
     socket.on('gameStarted', ({ role, word }) => {
-      window.location.href = `game.html?role=${role}&word=${word || ''}`;
+      const encodedWord = encodeURIComponent(word || '');
+      window.location.href = `game.html?role=${role}&word=${encodedWord}`;
+    });
+
+    // ❌ Fehlerbehandlung
+    socket.on('errorMsg', (msg) => {
+      alert(msg);
+      window.location.href = '/';
     });
   </script>
 </body>
