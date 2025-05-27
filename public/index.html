@@ -7,34 +7,14 @@
 </head>
 <body>
   <h1>🎭 Wer ist der Imposter?</h1>
+
   <input id="playerName" placeholder="Dein Name" />
   <button onclick="createLobby()">Lobby erstellen</button>
+
   <input id="lobbyCode" placeholder="Lobby-Code" maxlength="6" />
   <button onclick="joinLobby()">Beitreten</button>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-
-    function getName() {
-      return document.getElementById('playerName').value.trim();
-    }
-
-    function createLobby() {
-      const name = getName();
-      if (!name) return alert('Bitte gib deinen Namen ein.');
-      socket.emit('createLobby', name);
-      socket.once('lobbyCreated', ({ lobbyCode }) => {
-        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
-      });
-    }
-
-    function joinLobby() {
-      const name = getName();
-      const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
-      if (!name || !code) return alert('Name und Code eingeben!');
-      window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
-    }
-  </script>
+  <script src="client.js"></script>
 </body>
 </html>
