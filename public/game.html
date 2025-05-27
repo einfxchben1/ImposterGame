@@ -6,20 +6,21 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1 id="roleText"></h1>
-  <p id="wordText"></p>
+  <h1>Deine Rolle: <span id="role"></span></h1>
+  <div id="wordField" style="display:none;">
+    <h2>Geheimes Wort: <span id="word"></span></h2>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const role = params.get('role');
     const word = params.get('word');
 
-    document.getElementById('roleText').textContent =
-      role === 'Imposter' ? 'Du bist der IMPOSTER 🕵️‍♂️' : 'Du bist ein ehrlicher Spieler 😇';
-    
-    document.getElementById('wordText').textContent = word
-      ? `Dein Wort ist: ${word}`
-      : 'Du bekommst kein Wort. Versuche nicht aufzufallen!';
+    document.getElementById('role').textContent = role;
+    if (role === 'Nicht-Imposter') {
+      document.getElementById('wordField').style.display = 'block';
+      document.getElementById('word').textContent = word;
+    }
   </script>
 </body>
 </html>
