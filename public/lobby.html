@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Lobby</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Lobby <span id="lobbyCode"></span></h1>
+  <ul id="players"></ul>
+  <button onclick="startGame()">Spiel starten</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    document.getElementById('lobbyCode').textContent = code;
+
+    socket.on('playerList', (players) => {
+      document.getElementById('players').innerHTML =
+        players.map(p => `<li>${p.name}</li>`).join('');
+    });
+
+    function startGame() {
+      socket.emit('startGame', code);
+    }
+
+    socket.on('gameStarted', ({ role, word }) => {
+      window.location.href = `game.html?role=${role}&word=${word || ''}`;
+    });
+  </script>
+</body>
+</html>
