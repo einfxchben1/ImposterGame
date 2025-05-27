@@ -77,25 +77,32 @@ io.on('connection', (socket) => {
     io.to(code).emit('playerList', lobby.players);
   });
 
-  socket.on('startGame', (lobbyCode) => {
-    const code = lobbyCode.toUpperCase();
-    const lobby = lobbies.get(code);
-    if (!lobby || lobby.started || lobby.players.length < 3) return;
+ socket.on('startGame', (lobbyCode) => {
+  const code = lobbyCode.toUpperCase();
+  const lobby = lobbies.get(code);
 
-    lobby.started = true;
+  if (!lobby) return;
+  if (lobby.started) return;
+  if (lobby.players.length < 3) {
+    io.to(socket.id).emit('errorMsg', 'Mindestens 3 Spieler nötig, um das Spiel zu starten.');
+    return;
+  }
 
-    const numImposters = lobby.players.length >= 9 ? 2 : 1;
-    const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
-    lobby.imposters = shuffled.slice(0, numImposters).map(p => p.id);
+  lobby.started = true;
 
-    lobby.players.forEach(player => {
-      const isImposter = lobby.imposters.includes(player.id);
-      io.to(player.id).emit('gameStarted', {
-        role: isImposter ? 'Imposter' : 'Nicht-Imposter',
-        word: isImposter ? null : lobby.word
-      });
+  const impostersNeeded = lobby.players.length >= 9 ? 2 : 1;
+  const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
+  lobby.imposters = shuffled.slice(0, impostersNeeded).map(p => p.id);
+
+  lobby.players.forEach(player => {
+    const isImposter = lobby.imposters.includes(player.id);
+    io.to(player.id).emit('gameStarted', {
+      role: isImposter ? 'Imposter' : 'Nicht-Imposter',
+      word: isImposter ? null : lobby.word
     });
   });
+});
+
 
   socket.on('disconnect', () => {
     for (const [code, lobby] of lobbies.entries()) {
