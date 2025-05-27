@@ -29,12 +29,7 @@
 
     document.getElementById('lobbyCode').textContent = lobbyCode;
 
-    // Dem Server sagen, dass der Spieler beitritt
-    socket.emit('joinLobby', {
-      lobbyCode: lobbyCode,
-      playerName: playerName
-    });
-
+  
     // Spieler aktualisieren
     socket.on('playerList', (players) => {
       const list = document.getElementById('players');
