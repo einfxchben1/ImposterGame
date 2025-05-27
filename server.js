@@ -7,6 +7,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
+
 app.use(express.static('public'));
 
 const lobbies = new Map();
@@ -21,41 +22,58 @@ function generateLobbyCode() {
 }
 
 io.on('connection', (socket) => {
+  console.log('📥 Verbindung:', socket.id);
+
   socket.on('createLobby', (playerName) => {
-    let lobbyCode;
+    let code;
     do {
-      lobbyCode = generateLobbyCode();
-    } while (lobbies.has(lobbyCode));
+      code = generateLobbyCode();
+    } while (lobbies.has(code));
 
     const word = getRandomWord();
+
     const lobby = {
       players: [],
-      word,
       imposters: [],
+      word,
       started: false
     };
 
     const player = { id: socket.id, name: playerName };
     lobby.players.push(player);
-    lobbies.set(lobbyCode, lobby);
+    lobbies.set(code, lobby);
 
-    socket.join(lobbyCode);
-    socket.emit('lobbyCreated', { lobbyCode });
-    io.to(lobbyCode).emit('playerList', lobby.players);
+    socket.join(code);
+    socket.emit('lobbyCreated', { lobbyCode: code });
+    io.to(code).emit('playerList', lobby.players);
   });
 
   socket.on('joinLobby', ({ lobbyCode, playerName }) => {
     const code = lobbyCode.toUpperCase();
     const lobby = lobbies.get(code);
 
-    if (!lobby || lobby.started || lobby.players.length >= 15) {
-      socket.emit('errorMsg', 'Lobby nicht gefunden oder bereits gestartet.');
+    if (!lobby) {
+      socket.emit('errorMsg', 'Lobby nicht gefunden.');
       return;
     }
 
-    const player = { id: socket.id, name: playerName };
-    lobby.players.push(player);
-    socket.join(code);
+    if (lobby.started) {
+      socket.emit('errorMsg', 'Das Spiel wurde bereits gestartet.');
+      return;
+    }
+
+    if (lobby.players.length >= 15) {
+      socket.emit('errorMsg', 'Diese Lobby ist voll.');
+      return;
+    }
+
+    const alreadyJoined = lobby.players.find(p => p.id === socket.id);
+    if (!alreadyJoined) {
+      const player = { id: socket.id, name: playerName };
+      lobby.players.push(player);
+      socket.join(code);
+    }
+
     io.to(code).emit('playerList', lobby.players);
   });
 
@@ -65,9 +83,10 @@ io.on('connection', (socket) => {
     if (!lobby || lobby.started || lobby.players.length < 3) return;
 
     lobby.started = true;
-    const impostersNeeded = lobby.players.length >= 9 ? 2 : 1;
+
+    const numImposters = lobby.players.length >= 9 ? 2 : 1;
     const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
-    lobby.imposters = shuffled.slice(0, impostersNeeded).map(p => p.id);
+    lobby.imposters = shuffled.slice(0, numImposters).map(p => p.id);
 
     lobby.players.forEach(player => {
       const isImposter = lobby.imposters.includes(player.id);
@@ -93,4 +112,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => console.log(`🚀 Server läuft auf http://localhost:${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
+});
