@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Spiel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1 id="roleText"></h1>
+  <p id="wordText"></p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get('role');
+    const word = params.get('word');
+
+    document.getElementById('roleText').textContent =
+      role === 'Imposter' ? 'Du bist der IMPOSTER 🕵️‍♂️' : 'Du bist ein ehrlicher Spieler 😇';
+    
+    if (word) {
+      document.getElementById('wordText').textContent = `Das Wort lautet: ${word}`;
+    } else {
+      document.getElementById('wordText').textContent = 'Versuche, nicht aufzufallen!';
+    }
+  </script>
+</body>
+</html>
