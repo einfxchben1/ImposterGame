@@ -10,7 +10,7 @@
   <h1>🎭 Wer ist der Imposter?</h1>
 
   <input type="text" id="playerName" placeholder="Dein Name" />
-  
+
   <div class="buttons">
     <button onclick="createLobby()">Lobby erstellen</button>
     <input type="text" id="lobbyCode" placeholder="Lobby-Code" maxlength="6" />
@@ -26,33 +26,32 @@
     }
 
     function createLobby() {
-  const name = getNameInput();
-  if (!name) return alert('Bitte gib deinen Namen ein.');
+      const name = getNameInput();
+      if (!name) return alert('Bitte gib deinen Namen ein.');
 
-  // WICHTIG: auf die Antwort vom Server warten!
-  socket.emit('createLobby', name);
+      // Anfrage an den Server senden
+      socket.emit('createLobby', name);
 
-  socket.once('lobbyCreated', ({ lobbyCode }) => {
-    window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
-  });
-}
+      // EINMALIG auf Server-Antwort warten
+      socket.once('lobbyCreated', ({ lobbyCode }) => {
+        // Weiterleitung zur Lobby
+        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+      });
 
+      // Fehlerbehandlung
+      socket.once('errorMsg', (msg) => {
+        alert(msg);
+      });
+    }
 
     function joinLobby() {
       const name = getNameInput();
       const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
       if (!name || !code) return alert('Bitte Name UND Lobby-Code eingeben.');
 
-      // Anfrage an Server senden
-      socket.emit('joinLobby', { lobbyCode: code, playerName: name });
-
-      // Weiterleitung erfolgt sofort (nicht warten auf Bestätigung)
+      // Weiterleitung zur Lobby mit Name & Code
       window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
     }
-
-    socket.on('errorMsg', (msg) => {
-      alert(msg);
-    });
   </script>
 </body>
 </html>
