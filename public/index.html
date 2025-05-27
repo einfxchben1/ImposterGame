@@ -1,15 +1,44 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Wer ist der Imposter?</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Imposter Game – Start</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>🔍 Wer ist der Imposter?</h1>
-    <button id="startBtn">Spiel starten</button>
-    <div id="info"></div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="client.js"></script>
+  <h1>🎭 Wer ist der Imposter?</h1>
+
+  <input type="text" id="playerName" placeholder="Dein Name">
+  
+  <div class="buttons">
+    <button onclick="createLobby()">Lobby erstellen</button>
+    <input type="text" id="lobbyCode" placeholder="Lobby-Code eingeben">
+    <button onclick="joinLobby()">Beitreten</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    function createLobby() {
+      const name = document.getElementById('playerName').value.trim();
+      if (!name) return alert('Name eingeben!');
+      socket.emit('createLobby', name);
+    }
+
+    function joinLobby() {
+      const name = document.getElementById('playerName').value.trim();
+      const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
+      if (!name || !code) return alert('Name & Code eingeben!');
+      socket.emit('joinLobby', { lobbyCode: code, playerName: name });
+    }
+
+    socket.on('lobbyCreated', ({ lobbyCode }) => {
+      window.location.href = `lobby.html?code=${lobbyCode}`;
+    });
+
+    socket.on('errorMsg', msg => alert(msg));
+  </script>
 </body>
 </html>
