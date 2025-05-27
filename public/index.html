@@ -26,16 +26,17 @@
     }
 
     function createLobby() {
-      const name = getNameInput();
-      if (!name) return alert('Bitte gib deinen Namen ein.');
-      socket.emit('createLobby', name);
+  const name = getNameInput();
+  if (!name) return alert('Bitte gib deinen Namen ein.');
 
-      // Auf Antwort vom Server warten
-      socket.on('lobbyCreated', ({ lobbyCode }) => {
-        // Weiterleitung inklusive Spielername und Lobbycode
-        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
-      });
-    }
+  // WICHTIG: auf die Antwort vom Server warten!
+  socket.emit('createLobby', name);
+
+  socket.once('lobbyCreated', ({ lobbyCode }) => {
+    window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+  });
+}
+
 
     function joinLobby() {
       const name = getNameInput();
