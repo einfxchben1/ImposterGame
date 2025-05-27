@@ -1,42 +1,31 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Lobby</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎮 Lobby-Code: <span id="lobbyCode"></span></h1>
-
-  <h2>Spieler:</h2>
+  <h1>🧑‍🤝‍🧑 Lobby-Code: <span id="lobbyCode"></span></h1>
   <ul id="players"></ul>
-
   <button onclick="startGame()">🚀 Spiel starten</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-
-    // URL-Parameter lesen
     const params = new URLSearchParams(window.location.search);
     const lobbyCode = params.get('code');
     const playerName = params.get('name');
 
     if (!lobbyCode || !playerName) {
-      alert('Lobby-Code oder Name fehlt!');
+      alert('Fehlende Daten.');
       window.location.href = '/';
     }
 
     document.getElementById('lobbyCode').textContent = lobbyCode;
 
-    // Dem Server sagen, dass wir in die Lobby wollen
-    socket.emit('joinLobby', {
-      lobbyCode: lobbyCode,
-      playerName: playerName
-    });
+    socket.emit('joinLobby', { lobbyCode, playerName });
 
-    // Spielerliste empfangen
     socket.on('playerList', (players) => {
       const list = document.getElementById('players');
       list.innerHTML = '';
@@ -47,22 +36,15 @@
       });
     });
 
-    // Spiel starten
     function startGame() {
       socket.emit('startGame', lobbyCode);
     }
 
-    // Server sagt, das Spiel hat begonnen → weiterleiten
-socket.on('gameStarted', ({ role, word }) => {
-  const encodedWord = encodeURIComponent(word || '');
-  window.location.href = `game.html?role=${role}&word=${encodedWord}`;
-});
-
-    // Fehler
-    socket.on('errorMsg', (msg) => {
-      alert(msg);
-      window.location.href = '/';
+    socket.on('gameStarted', ({ role, word }) => {
+      window.location.href = `game.html?role=${role}&word=${encodeURIComponent(word || '')}`;
     });
+
+    socket.on('errorMsg', msg => alert(msg));
   </script>
 </body>
 </html>
