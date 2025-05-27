@@ -25,24 +25,21 @@
       return document.getElementById('playerName').value.trim();
     }
 
-    function createLobby() {
-      const name = getNameInput();
-      if (!name) return alert('Bitte gib deinen Namen ein.');
+function createLobby() {
+  const name = getNameInput();
+  if (!name) return alert('Bitte gib deinen Namen ein.');
 
-      // Anfrage an den Server senden
-      socket.emit('createLobby', name);
+  socket.emit('createLobby', name);
 
-      // EINMALIG auf Server-Antwort warten
-      socket.once('lobbyCreated', ({ lobbyCode }) => {
-        // Weiterleitung zur Lobby
-        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
-      });
+  socket.once('lobbyCreated', ({ lobbyCode }) => {
+    window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+  });
 
-      // Fehlerbehandlung
-      socket.once('errorMsg', (msg) => {
-        alert(msg);
-      });
-    }
+  socket.once('errorMsg', (msg) => {
+    alert(msg);
+  });
+}
+
 
     function joinLobby() {
       const name = getNameInput();
