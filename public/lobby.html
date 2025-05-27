@@ -42,4 +42,27 @@
       list.innerHTML = '';
       players.forEach(p => {
         const li = document.createElement('li');
-        li.text
+        li.textContent = p.name;
+        list.appendChild(li);
+      });
+    });
+
+    // Spiel starten
+    function startGame() {
+      socket.emit('startGame', lobbyCode);
+    }
+
+    // Server sagt, das Spiel hat begonnen → weiterleiten
+    socket.on('gameStarted', ({ role, word }) => {
+      const encodedWord = encodeURIComponent(word || '');
+      window.location.href = `game.html?role=${role}&word=${encodedWord}`;
+    });
+
+    // Fehler
+    socket.on('errorMsg', (msg) => {
+      alert(msg);
+      window.location.href = '/';
+    });
+  </script>
+</body>
+</html>
