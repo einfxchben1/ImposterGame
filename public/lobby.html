@@ -7,17 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🧑‍🤝‍🧑 Lobby-Code: <span id="lobbyCode"></span></h1>
+  <h1>🎮 Lobby-Code: <span id="lobbyCode"></span></h1>
 
-  <h2>Spieler in der Lobby:</h2>
+  <h2>Spieler:</h2>
   <ul id="players"></ul>
 
-  <button id="startBtn" onclick="startGame()">🚀 Spiel starten</button>
+  <button onclick="startGame()">🚀 Spiel starten</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
 
+    // URL-Parameter lesen
     const params = new URLSearchParams(window.location.search);
     const lobbyCode = params.get('code');
     const playerName = params.get('name');
@@ -29,31 +30,16 @@
 
     document.getElementById('lobbyCode').textContent = lobbyCode;
 
-  
-    // Spieler aktualisieren
+    // Dem Server sagen, dass wir in die Lobby wollen
+    socket.emit('joinLobby', {
+      lobbyCode: lobbyCode,
+      playerName: playerName
+    });
+
+    // Spielerliste empfangen
     socket.on('playerList', (players) => {
       const list = document.getElementById('players');
       list.innerHTML = '';
       players.forEach(p => {
         const li = document.createElement('li');
-        li.textContent = p.name;
-        list.appendChild(li);
-      });
-    });
-
-    function startGame() {
-      socket.emit('startGame', lobbyCode);
-    }
-
-    socket.on('gameStarted', ({ role, word }) => {
-      const encodedWord = encodeURIComponent(word || '');
-      window.location.href = `game.html?role=${role}&word=${encodedWord}`;
-    });
-
-    socket.on('errorMsg', (msg) => {
-      alert(msg);
-      window.location.href = '/';
-    });
-  </script>
-</body>
-</html>
+        li.text
