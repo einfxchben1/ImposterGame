@@ -5,7 +5,6 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
@@ -13,7 +12,7 @@ app.use(express.static('public'));
 const lobbies = new Map();
 
 function getRandomWord() {
-  const words = ['Pizza', 'Zug', 'Kino', 'Wald', 'Museum', 'Buch', 'Insel'];
+  const words = ['Pizza', 'Kino', 'Flughafen', 'Wald', 'Schule', 'Strand', 'Zoo'];
   return words[Math.floor(Math.random() * words.length)];
 }
 
@@ -22,8 +21,6 @@ function generateLobbyCode() {
 }
 
 io.on('connection', (socket) => {
-  console.log('📥 Verbindung:', socket.id);
-
   socket.on('createLobby', (playerName) => {
     let code;
     do {
@@ -31,18 +28,14 @@ io.on('connection', (socket) => {
     } while (lobbies.has(code));
 
     const word = getRandomWord();
-
     const lobby = {
-      players: [],
-      imposters: [],
+      players: [{ id: socket.id, name: playerName }],
       word,
+      imposters: [],
       started: false
     };
 
-    const player = { id: socket.id, name: playerName };
-    lobby.players.push(player);
     lobbies.set(code, lobby);
-
     socket.join(code);
     socket.emit('lobbyCreated', { lobbyCode: code });
     io.to(code).emit('playerList', lobby.players);
@@ -51,58 +44,38 @@ io.on('connection', (socket) => {
   socket.on('joinLobby', ({ lobbyCode, playerName }) => {
     const code = lobbyCode.toUpperCase();
     const lobby = lobbies.get(code);
-
-    if (!lobby) {
-      socket.emit('errorMsg', 'Lobby nicht gefunden.');
-      return;
-    }
-
-    if (lobby.started) {
-      socket.emit('errorMsg', 'Das Spiel wurde bereits gestartet.');
-      return;
-    }
-
-    if (lobby.players.length >= 15) {
-      socket.emit('errorMsg', 'Diese Lobby ist voll.');
+    if (!lobby || lobby.started || lobby.players.length >= 15) {
+      socket.emit('errorMsg', 'Lobby nicht gefunden oder bereits gestartet.');
       return;
     }
 
     const alreadyJoined = lobby.players.find(p => p.id === socket.id);
     if (!alreadyJoined) {
-      const player = { id: socket.id, name: playerName };
-      lobby.players.push(player);
+      lobby.players.push({ id: socket.id, name: playerName });
       socket.join(code);
     }
 
     io.to(code).emit('playerList', lobby.players);
   });
 
- socket.on('startGame', (lobbyCode) => {
-  const code = lobbyCode.toUpperCase();
-  const lobby = lobbies.get(code);
+  socket.on('startGame', (lobbyCode) => {
+    const code = lobbyCode.toUpperCase();
+    const lobby = lobbies.get(code);
+    if (!lobby || lobby.started || lobby.players.length < 3) return;
 
-  if (!lobby) return;
-  if (lobby.started) return;
-  if (lobby.players.length < 3) {
-    io.to(socket.id).emit('errorMsg', 'Mindestens 3 Spieler nötig, um das Spiel zu starten.');
-    return;
-  }
+    lobby.started = true;
+    const impostersCount = lobby.players.length >= 9 ? 2 : 1;
+    const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
+    lobby.imposters = shuffled.slice(0, impostersCount).map(p => p.id);
 
-  lobby.started = true;
-
-  const impostersNeeded = lobby.players.length >= 9 ? 2 : 1;
-  const shuffled = [...lobby.players].sort(() => 0.5 - Math.random());
-  lobby.imposters = shuffled.slice(0, impostersNeeded).map(p => p.id);
-
-  lobby.players.forEach(player => {
-    const isImposter = lobby.imposters.includes(player.id);
-    io.to(player.id).emit('gameStarted', {
-      role: isImposter ? 'Imposter' : 'Nicht-Imposter',
-      word: isImposter ? null : lobby.word
+    lobby.players.forEach(player => {
+      const isImposter = lobby.imposters.includes(player.id);
+      io.to(player.id).emit('gameStarted', {
+        role: isImposter ? 'Imposter' : 'Nicht-Imposter',
+        word: isImposter ? null : lobby.word
+      });
     });
   });
-});
-
 
   socket.on('disconnect', () => {
     for (const [code, lobby] of lobbies.entries()) {
@@ -110,9 +83,7 @@ io.on('connection', (socket) => {
       if (index !== -1) {
         lobby.players.splice(index, 1);
         io.to(code).emit('playerList', lobby.players);
-        if (lobby.players.length === 0) {
-          lobbies.delete(code);
-        }
+        if (lobby.players.length === 0) lobbies.delete(code);
         break;
       }
     }
