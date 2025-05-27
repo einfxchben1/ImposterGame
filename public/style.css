@@ -1,27 +1,33 @@
 body {
-    font-family: sans-serif;
-    text-align: center;
-    background-color: #1e1e2f;
-    color: #fff;
-    padding: 20px;
+  font-family: sans-serif;
+  text-align: center;
+  padding: 2em;
+  background: #f9f9f9;
 }
 
-button {
-    padding: 10px 20px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    background-color: #28a745;
-    color: white;
-    cursor: pointer;
+h1 {
+  font-size: 2em;
+  color: #333;
 }
 
-button:hover {
-    background-color: #218838;
+input, button {
+  margin: 0.5em;
+  padding: 0.5em;
+  font-size: 1em;
 }
 
-#info {
-    margin-top: 30px;
-    font-size: 20px;
-    white-space: pre-wrap;
+.buttons {
+  margin-top: 1em;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin: 0.3em;
+  padding: 0.3em;
+  background: #ddd;
+  border-radius: 5px;
 }
