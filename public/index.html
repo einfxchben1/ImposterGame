@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Imposter Game – Start</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>🎭 Wer ist der Imposter?</h1>
 
-  <input type="text" id="playerName" placeholder="Dein Name">
-
+  <input type="text" id="playerName" placeholder="Dein Name" />
+  
   <div class="buttons">
     <button onclick="createLobby()">Lobby erstellen</button>
-    <input type="text" id="lobbyCode" placeholder="Lobby-Code">
+    <input type="text" id="lobbyCode" placeholder="Lobby-Code" maxlength="6" />
     <button onclick="joinLobby()">Beitreten</button>
   </div>
 
@@ -20,24 +21,37 @@
   <script>
     const socket = io();
 
+    function getNameInput() {
+      return document.getElementById('playerName').value.trim();
+    }
+
     function createLobby() {
-      const name = document.getElementById('playerName').value.trim();
-      if (!name) return alert('Bitte Namen eingeben!');
+      const name = getNameInput();
+      if (!name) return alert('Bitte gib deinen Namen ein.');
       socket.emit('createLobby', name);
+
+      // Auf Antwort vom Server warten
+      socket.on('lobbyCreated', ({ lobbyCode }) => {
+        // Weiterleitung inklusive Spielername und Lobbycode
+        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+      });
     }
 
     function joinLobby() {
-      const name = document.getElementById('playerName').value.trim();
+      const name = getNameInput();
       const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
-      if (!name || !code) return alert('Name & Code eingeben!');
+      if (!name || !code) return alert('Bitte Name UND Lobby-Code eingeben.');
+
+      // Anfrage an Server senden
       socket.emit('joinLobby', { lobbyCode: code, playerName: name });
+
+      // Weiterleitung erfolgt sofort (nicht warten auf Bestätigung)
+      window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
     }
 
-    socket.on('lobbyCreated', ({ lobbyCode }) => {
-      window.location.href = `lobby.html?code=${lobbyCode}`;
+    socket.on('errorMsg', (msg) => {
+      alert(msg);
     });
-
-    socket.on('errorMsg', msg => alert(msg));
   </script>
 </body>
 </html>
