@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Imposter Game – Start</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -10,10 +9,10 @@
   <h1>🎭 Wer ist der Imposter?</h1>
 
   <input type="text" id="playerName" placeholder="Dein Name">
-  
+
   <div class="buttons">
     <button onclick="createLobby()">Lobby erstellen</button>
-    <input type="text" id="lobbyCode" placeholder="Lobby-Code eingeben">
+    <input type="text" id="lobbyCode" placeholder="Lobby-Code">
     <button onclick="joinLobby()">Beitreten</button>
   </div>
 
@@ -23,7 +22,7 @@
 
     function createLobby() {
       const name = document.getElementById('playerName').value.trim();
-      if (!name) return alert('Name eingeben!');
+      if (!name) return alert('Bitte Namen eingeben!');
       socket.emit('createLobby', name);
     }
 
