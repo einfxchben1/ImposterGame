@@ -8,42 +8,10 @@
 <body>
   <h1>🧑‍🤝‍🧑 Lobby-Code: <span id="lobbyCode"></span></h1>
   <ul id="players"></ul>
+
   <button onclick="startGame()">🚀 Spiel starten</button>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    const params = new URLSearchParams(window.location.search);
-    const lobbyCode = params.get('code');
-    const playerName = params.get('name');
-
-    if (!lobbyCode || !playerName) {
-      alert('Fehlende Daten!');
-      window.location.href = '/';
-    }
-
-    document.getElementById('lobbyCode').textContent = lobbyCode;
-    socket.emit('joinLobby', { lobbyCode, playerName });
-
-    socket.on('playerList', (players) => {
-      const list = document.getElementById('players');
-      list.innerHTML = '';
-      players.forEach(p => {
-        const li = document.createElement('li');
-        li.textContent = p.name;
-        list.appendChild(li);
-      });
-    });
-
-    function startGame() {
-      socket.emit('startGame', lobbyCode);
-    }
-
-    socket.on('gameStarted', ({ role, word }) => {
-      window.location.href = `game.html?role=${role}&word=${encodeURIComponent(word || '')}`;
-    });
-
-    socket.on('errorMsg', msg => alert(msg));
-  </script>
+  <script src="client.js"></script>
 </body>
 </html>
