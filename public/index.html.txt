@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Wer ist der Imposter?</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>🔍 Wer ist der Imposter?</h1>
+    <button id="startBtn">Spiel starten</button>
+    <div id="info"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
