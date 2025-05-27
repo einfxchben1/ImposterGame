@@ -1,24 +1,64 @@
 const socket = io();
-const startBtn = document.getElementById("startBtn");
-const info = document.getElementById("info");
 
-startBtn.addEventListener("click", () => {
-    socket.emit("startGame");
-});
+// Hilfsfunktionen
+function getParam(key) {
+  return new URLSearchParams(window.location.search).get(key);
+}
 
-socket.on("role", (word) => {
-    if (word) {
-        info.textContent = `Dein Wort ist:\n📘 ${word}`;
-    } else {
-        info.textContent = `Du bist der Imposter!\n🕵️ Kein Wort für dich.`;
-    }
-});
+// Lobbyseite
+if (location.pathname.endsWith('lobby.html')) {
+  const lobbyCode = getParam('code');
+  const playerName = getParam('name');
 
-socket.on("message", msg => {
+  if (!lobbyCode || !playerName) {
+    alert('Fehlende Daten!');
+    location.href = '/';
+  }
+
+  document.getElementById('lobbyCode').textContent = lobbyCode;
+  socket.emit('joinLobby', { lobbyCode, playerName });
+
+  socket.on('playerList', (players) => {
+    const list = document.getElementById('players');
+    list.innerHTML = '';
+    players.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = p.name;
+      list.appendChild(li);
+    });
+  });
+
+  socket.on('gameStarted', ({ role, word }) => {
+    const url = `game.html?role=${role}&word=${encodeURIComponent(word || '')}`;
+    location.href = url;
+  });
+
+  socket.on('errorMsg', (msg) => {
     alert(msg);
-});
+    location.href = '/';
+  });
 
-socket.on("gameStarted", ({ playerCount }) => {
-    startBtn.style.display = "none";
-    console.log(`Spiel gestartet mit ${playerCount} Spielern.`);
-});
+  window.startGame = function () {
+    socket.emit('startGame', lobbyCode);
+  };
+}
+
+// Startseite
+if (location.pathname.endsWith('index.html') || location.pathname === '/') {
+  window.createLobby = function () {
+    const name = document.getElementById('playerName').value.trim();
+    if (!name) return alert('Bitte gib deinen Namen ein.');
+
+    socket.emit('createLobby', name);
+    socket.once('lobbyCreated', ({ lobbyCode }) => {
+      location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+    });
+  };
+
+  window.joinLobby = function () {
+    const name = document.getElementById('playerName').value.trim();
+    const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
+    if (!name || !code) return alert('Bitte Name und Code eingeben!');
+    location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
+  };
+}
