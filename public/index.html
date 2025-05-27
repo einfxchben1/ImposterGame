@@ -47,7 +47,7 @@ function createLobby() {
       if (!name || !code) return alert('Bitte Name UND Lobby-Code eingeben.');
 
       // Weiterleitung zur Lobby mit Name & Code
-      window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
+      window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
     }
   </script>
 </body>
