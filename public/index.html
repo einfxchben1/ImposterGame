@@ -1,62 +1,39 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Imposter Game – Start</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Imposter Game</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>🎭 Wer ist der Imposter?</h1>
-
-  <input type="text" id="playerName" placeholder="Dein Name" />
-
-  <div class="buttons">
-    <button onclick="createLobby()">Lobby erstellen</button>
-    <input type="text" id="lobbyCode" placeholder="Lobby-Code" maxlength="6" />
-    <button onclick="joinLobby()">Beitreten</button>
-  </div>
+  <input id="playerName" placeholder="Dein Name" />
+  <button onclick="createLobby()">Lobby erstellen</button>
+  <input id="lobbyCode" placeholder="Lobby-Code" maxlength="6" />
+  <button onclick="joinLobby()">Beitreten</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
 
-    function getNameInput() {
+    function getName() {
       return document.getElementById('playerName').value.trim();
     }
 
-    // 🎯 LOBBY ERSTELLEN
     function createLobby() {
-      const name = getNameInput();
-      if (!name) {
-        alert('Bitte gib deinen Namen ein.');
-        return;
-      }
-
-      // Anfrage an Server
+      const name = getName();
+      if (!name) return alert('Bitte Name eingeben.');
       socket.emit('createLobby', name);
 
-      // EINMALIG auf Antwort vom Server warten
       socket.once('lobbyCreated', ({ lobbyCode }) => {
         window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
       });
-
-      // Fehlerbehandlung
-      socket.once('errorMsg', (msg) => {
-        alert(msg);
-      });
     }
 
-    // 🎯 LOBBY BEITRETEN
     function joinLobby() {
-      const name = getNameInput();
+      const name = getName();
       const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
-      if (!name || !code) {
-        alert('Bitte Name UND Lobby-Code eingeben.');
-        return;
-      }
-
-      // Weiterleitung mit Parametern
+      if (!name || !code) return alert('Bitte Name und Lobby-Code eingeben.');
       window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
     }
   </script>
