@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Imposter Game – Start</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎭 Wer ist der Imposter?</h1>
@@ -25,29 +25,39 @@
       return document.getElementById('playerName').value.trim();
     }
 
-function createLobby() {
-  const name = getNameInput();
-  if (!name) return alert('Bitte gib deinen Namen ein.');
+    // 🎯 LOBBY ERSTELLEN
+    function createLobby() {
+      const name = getNameInput();
+      if (!name) {
+        alert('Bitte gib deinen Namen ein.');
+        return;
+      }
 
-  socket.emit('createLobby', name);
+      // Anfrage an Server
+      socket.emit('createLobby', name);
 
-  socket.once('lobbyCreated', ({ lobbyCode }) => {
-    window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
-  });
+      // EINMALIG auf Antwort vom Server warten
+      socket.once('lobbyCreated', ({ lobbyCode }) => {
+        window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+      });
 
-  socket.once('errorMsg', (msg) => {
-    alert(msg);
-  });
-}
+      // Fehlerbehandlung
+      socket.once('errorMsg', (msg) => {
+        alert(msg);
+      });
+    }
 
-
+    // 🎯 LOBBY BEITRETEN
     function joinLobby() {
       const name = getNameInput();
       const code = document.getElementById('lobbyCode').value.trim().toUpperCase();
-      if (!name || !code) return alert('Bitte Name UND Lobby-Code eingeben.');
+      if (!name || !code) {
+        alert('Bitte Name UND Lobby-Code eingeben.');
+        return;
+      }
 
-      // Weiterleitung zur Lobby mit Name & Code
-      window.location.href = `lobby.html?code=${lobbyCode}&name=${encodeURIComponent(name)}`;
+      // Weiterleitung mit Parametern
+      window.location.href = `lobby.html?code=${code}&name=${encodeURIComponent(name)}`;
     }
   </script>
 </body>
